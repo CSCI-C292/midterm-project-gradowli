@@ -176,9 +176,20 @@ public class Player : MonoBehaviour
         GetComponent<CharacterController>().Move(movementVector * _moveSpeed * Time.deltaTime);
     }
 
-    void OnControllerColliderHit(ControllerColliderHit collider){
+    void OnControllerColliderHit(ControllerColliderHit collider) {
         if (collider.transform.CompareTag("Destroy")){
             GameEvents.InvokeResetPlayer();
+            GameEvents.InvokeScoreIncreased(-20);
+            Destroy(this.gameObject);
+        }
+        else if (collider.transform.CompareTag("Collect")) {
+            Destroy(collider.gameObject);
+            GameEvents.InvokeScoreIncreased(100);
+        }
+        else if (collider.transform.CompareTag("Win")) {
+            GameEvents.InvokeResetPlayer();
+            GameEvents.InvokeScoreIncreased(100);
+            GameEvents.InvokeLevelIncreased();
             Destroy(this.gameObject);
         }
     }
