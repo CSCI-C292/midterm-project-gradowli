@@ -13,6 +13,9 @@ public class GameState : MonoBehaviour
     [SerializeField] GameObject _scoreText;
     [SerializeField] GameObject _level1;
     [SerializeField] GameObject _level2;
+    [SerializeField] GameObject _crystalPrefab;
+    float _xCrystalSpawn = -3.54634f;
+    float _yCrystalSpawn = -0.4100001f;
     GameObject _currentLevel;
     int _currentLevelIndex = 0;
     GameObject[] _levels;
@@ -23,6 +26,7 @@ public class GameState : MonoBehaviour
         Instance = this;
         GameEvents.ScoreIncreased += OnScoreIncreased;
         GameEvents.LevelIncreased += OnLevelIncreased;
+        GameEvents.ResetPlayer += OnResetPlayer;
     }
 
     void Start() {
@@ -57,14 +61,22 @@ public class GameState : MonoBehaviour
     }
 
     void OnLevelIncreased(object sender, EventArgs args) {
-        foreach (Transform child in _currentLevel.transform) {
-            child.gameObject.SetActive(false);
+        if (_currentLevelIndex < _levels.Length - 1) {
+            foreach (Transform child in _currentLevel.transform) {
+                child.gameObject.SetActive(false);
+            }
+            _currentLevelIndex++;
+            _currentLevel = _levels[_currentLevelIndex];
+            foreach (Transform child in _currentLevel.transform) {
+                child.gameObject.SetActive(true);
+            }
         }
-        _currentLevelIndex++;
-        _currentLevel = _levels[_currentLevelIndex];
-        foreach (Transform child in _currentLevel.transform) {
-            child.gameObject.SetActive(true);
-        }
+    }
+
+    void OnResetPlayer(object sender, EventArgs args) {
+        if (_currentLevel == _level2) {
+            Instantiate(_crystalPrefab, new Vector3(_xCrystalSpawn, _yCrystalSpawn, 0f), Quaternion.identity);
+        };
     }
 
 }

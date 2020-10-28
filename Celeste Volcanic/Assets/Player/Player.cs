@@ -7,11 +7,11 @@ public class Player : MonoBehaviour
 {
     [SerializeField] float _moveSpeed = 3f;
     [SerializeField] float _jumpHeight = 2f;
-    [SerializeField] float _wallJumpSpeed = 1f;
+    [SerializeField] float _wallJumpSpeed = 0.5f;
     [SerializeField] float _dashSpeed = 8f;
     float _verticalVelocity = 0f;
     float _horizontalVelocity = 0f;
-    float _gravity = -6f;
+    float _gravity = -8f;
     bool _grounded = false;
     bool _jumping = true;
     bool _side = false;
@@ -38,6 +38,7 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        
         if (_addedHorizontalVelocity == 0f) { //determines wheter added velocity is used from dash/wall jump or if normal velocity from input is used
             _horizontalVelocity = 1.5f * Input.GetAxis("Horizontal");
         }
@@ -54,11 +55,6 @@ public class Player : MonoBehaviour
         }
 
         _grounded = controller.isGrounded; //determines if player is on ground
-        if (_ceilingCount == 0 && (controller.collisionFlags & CollisionFlags.Above) != 0) { //stops upward velocity if player hits head
-            _verticalVelocity = 0f;
-            _ceilingCount = 20;
-            
-        }
 
         _verticalVelocity += _gravity * Time.deltaTime;
 
@@ -81,9 +77,9 @@ public class Player : MonoBehaviour
         _x = Input.GetKeyDown("x");
 
         if (_c && _side && _jumping) { //c for jump/wall jump, x for dash
-            _horizontalCount = 1;
-            _horizontalMod = 3;
-            _horizontalCountLimit = 20;
+            _horizontalCount = 0;
+            _horizontalMod = 10;
+            _horizontalCountLimit = 15;
             if (_playerDirectionRight && ! _jumpedRight) {
                 _addedHorizontalVelocity -= _wallJumpSpeed;
                 _verticalVelocity = _jumpHeight;
@@ -151,7 +147,7 @@ public class Player : MonoBehaviour
         if (_horizontalCount == _horizontalCountLimit) { //reset counter system for horizontal velocity
             _horizontalCount = 1;
             _addedHorizontalVelocity = 0f;
-             _horizontalVelocity = 1.5f * Input.GetAxis("Horizontal");
+             _horizontalVelocity = 0f;
         }
         else if (_horizontalCount % _horizontalMod == 0) {
             _addedHorizontalVelocity /= 2;
@@ -162,6 +158,7 @@ public class Player : MonoBehaviour
         }
 
         Movement();
+
         if (_ceilingCount > 0) {
             _ceilingCount--;
         }   
@@ -182,15 +179,25 @@ public class Player : MonoBehaviour
             GameEvents.InvokeScoreIncreased(-20);
             Destroy(this.gameObject);
         }
-        else if (collider.transform.CompareTag("Collect")) {
+        else if (collider.transform.CompareTag("Star")) {
             Destroy(collider.gameObject);
             GameEvents.InvokeScoreIncreased(100);
+        }
+        else if (collider.transform.CompareTag("Crystal")) {
+            Destroy(collider.gameObject);
+            _dashed = false;
         }
         else if (collider.transform.CompareTag("Win")) {
             GameEvents.InvokeResetPlayer();
             GameEvents.InvokeScoreIncreased(100);
             GameEvents.InvokeLevelIncreased();
             Destroy(this.gameObject);
+        }
+        else {
+            if (_ceilingCount == 0 && (controller.collisionFlags & CollisionFlags.Above) != 0) { //stops upward velocity if player hits head
+                _verticalVelocity = 0f;
+                _ceilingCount = 20;
+            }
         }
     }
 }
