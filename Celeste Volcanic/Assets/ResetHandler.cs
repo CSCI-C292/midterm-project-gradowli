@@ -10,7 +10,7 @@ public class ResetHandler : MonoBehaviour
     float _ySpawn = -3.3f;
     void Awake() {
         //DontDestroyOnLoad(transform.gameObject);
-        GameEvents.ResetPlayer += OnResetPlayer;
+        //GameEvents.ResetPlayer += OnResetPlayer;
     }
     
     // Start is called before the first frame update
@@ -26,6 +26,6 @@ public class ResetHandler : MonoBehaviour
     }
 
     void OnResetPlayer(object sender, EventArgs args) {
-        Instantiate(_playerPrefab, new Vector3(_xSpawn, _ySpawn, -1.6f), Quaternion.identity);
+        //Instantiate(_playerPrefab, new Vector3(_xSpawn, _ySpawn, -1.6f), Quaternion.identity);
     }
 }
