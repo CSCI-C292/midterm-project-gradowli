@@ -150,6 +150,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _moveSpeed: 3
   _jumpHeight: 2.5
+  _wallJumpSpeed: 3
+  _dashSpeed: 2
+  _trampolineHeight: 4
 --- !u!1 &7887028872137905989
 GameObject:
   m_ObjectHideFlags: 0

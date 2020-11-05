@@ -9,6 +9,7 @@ public class ResetHandler : MonoBehaviour
     float _xSpawn = -3.4f;
     float _ySpawn = -3.3f;
     void Awake() {
+        //DontDestroyOnLoad(transform.gameObject);
         GameEvents.ResetPlayer += OnResetPlayer;
     }
     

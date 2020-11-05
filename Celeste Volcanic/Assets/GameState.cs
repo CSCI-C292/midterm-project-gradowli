@@ -11,28 +11,41 @@ public class GameState : MonoBehaviour
     int _score = 0;
     
     [SerializeField] GameObject _scoreText;
+    [SerializeField] GameObject _winText1;
+    [SerializeField] GameObject _winText2;
     [SerializeField] GameObject _level1;
     [SerializeField] GameObject _level2;
+    [SerializeField] GameObject _level3;
+    [SerializeField] GameObject _levelEnd;
     [SerializeField] GameObject _crystalPrefab;
+    [SerializeField] GameObject _breakablePrefab;
     float _xCrystalSpawn = -3.54634f;
     float _yCrystalSpawn = -0.4100001f;
     GameObject _currentLevel;
     int _currentLevelIndex = 0;
     GameObject[] _levels;
+    bool _newLevel = false;
+    bool _isGameOver = false;
 
     public static GameState Instance;
 
     void Awake() {
         Instance = this;
+        //DontDestroyOnLoad(transform.gameObject);
         GameEvents.ScoreIncreased += OnScoreIncreased;
         GameEvents.LevelIncreased += OnLevelIncreased;
         GameEvents.ResetPlayer += OnResetPlayer;
+        GameEvents.InstantiateBreakable += OnInstantiateBreakable;
     }
 
     void Start() {
-        _levels = new GameObject[2];
+        _winText1.SetActive(false);
+        _winText2.SetActive(false);
+        _levels = new GameObject[4];
         _levels[0] = _level1;
         _levels[1] = _level2;
+        _levels[2] = _level3;
+        _levels[3] = _levelEnd;
 
         _currentLevel = _level1;
 
@@ -48,7 +61,10 @@ public class GameState : MonoBehaviour
     }
 
     void Update() {
-        
+        if (Input.GetButtonDown("Submit") && _isGameOver) {
+            //SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+            SceneManager.LoadScene(0);
+        }
     }
 
     public void IncreaseScore(int amount) {
@@ -71,12 +87,35 @@ public class GameState : MonoBehaviour
                 child.gameObject.SetActive(true);
             }
         }
+        else {
+            _scoreText.SetActive(false);
+            _winText1.SetActive(true);
+            _winText2.SetActive(true);
+            _winText2.GetComponent<TextMeshProUGUI>().text = "Your score was " + _score;
+            _isGameOver = true;
+        }
+        _newLevel = true;
     }
 
     void OnResetPlayer(object sender, EventArgs args) {
         if (_currentLevel == _level2) {
-            Instantiate(_crystalPrefab, new Vector3(_xCrystalSpawn, _yCrystalSpawn, 0f), Quaternion.identity);
-        };
+            GameObject crystal = Instantiate(_crystalPrefab, new Vector3(_xCrystalSpawn, _yCrystalSpawn, 0f), Quaternion.identity);
+            crystal.transform.parent = _level2.transform;
+        }
+    }
+
+
+    IEnumerator BreakableInstantiation(object sender, BreakableEventArgs args) {
+        yield return new WaitForSeconds(1.5f);
+        if (! _newLevel) {
+            GameObject breakable = Instantiate(_breakablePrefab, new Vector3(args.x, args.y, args.z), Quaternion.identity);
+            breakable.transform.parent = _currentLevel.transform;
+        }
+    }
+
+    void OnInstantiateBreakable(object sender, BreakableEventArgs args) {
+        _newLevel = false;
+        StartCoroutine(BreakableInstantiation(sender, args)); 
     }
 
 }

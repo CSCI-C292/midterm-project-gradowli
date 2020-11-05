@@ -6,9 +6,10 @@ using System;
 public class Player : MonoBehaviour
 {
     [SerializeField] float _moveSpeed = 3f;
-    [SerializeField] float _jumpHeight = 2f;
-    [SerializeField] float _wallJumpSpeed = 0.5f;
-    [SerializeField] float _dashSpeed = 8f;
+    [SerializeField] float _jumpHeight = 2.5f;
+    [SerializeField] float _wallJumpSpeed = 3f;
+    [SerializeField] float _dashSpeed = 2f;
+    [SerializeField] float _trampolineHeight = 5f;
     float _verticalVelocity = 0f;
     float _horizontalVelocity = 0f;
     float _gravity = -8f;
@@ -26,6 +27,8 @@ public class Player : MonoBehaviour
     bool _jumpedRight = false;
     bool _x = false;
     bool _dashed = false;
+    bool _onTrampoline = false;
+    int _trampolineCount = 0;
 
     CharacterController controller;
 
@@ -60,7 +63,7 @@ public class Player : MonoBehaviour
 
         _side = (controller.collisionFlags & CollisionFlags.Sides) != 0;
 
-        if (_grounded) { //dash/jump cooldowns reset upon touching ground
+        if (_grounded && ! _onTrampoline) { //dash/jump cooldowns reset upon touching ground
             _verticalVelocity = 0f;
             _jumping = false;
             _jumpedLeft = false;
@@ -163,6 +166,13 @@ public class Player : MonoBehaviour
             _ceilingCount--;
         }   
 
+        if (_trampolineCount == 0) {
+            _onTrampoline = false;
+        }
+        else {
+            --_trampolineCount;
+        }
+
     }
 
     void Movement() {
@@ -187,11 +197,25 @@ public class Player : MonoBehaviour
             Destroy(collider.gameObject);
             _dashed = false;
         }
-        else if (collider.transform.CompareTag("Win")) {
+        else if (collider.transform.CompareTag("LevelUp")) {
+            GameEvents.InvokeLevelIncreased();
             GameEvents.InvokeResetPlayer();
             GameEvents.InvokeScoreIncreased(100);
-            GameEvents.InvokeLevelIncreased();
             Destroy(this.gameObject);
+        }
+        else if (collider.transform.CompareTag("Trampoline")) {
+            _verticalVelocity = _trampolineHeight;
+            _onTrampoline = true;
+            _trampolineCount = 10;
+            _jumping = true;
+            _dashed = false;
+        }
+        else if (collider.transform.CompareTag("Break")) {
+            collider.transform.GetComponentInParent<Breakable>().InitializeBreak();
+        }
+        else if (collider.transform.CompareTag("Win")) {
+            GameEvents.InvokeLevelIncreased();
+            Destroy(collider.gameObject);
         }
         else {
             if (_ceilingCount == 0 && (controller.collisionFlags & CollisionFlags.Above) != 0) { //stops upward velocity if player hits head

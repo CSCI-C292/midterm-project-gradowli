@@ -8,6 +8,9 @@ TagManager:
   - Win
   - Star
   - Crystal
+  - Trampoline
+  - LevelUp
+  - Break
   layers:
   - Default
   - TransparentFX
